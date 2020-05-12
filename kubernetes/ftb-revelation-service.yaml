@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ftb-revelation
+  name: ftb-revelation
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ftb-revelation
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ftb-revelation
+    spec:
+      containers:
+        - image: >-
+            gcr.io/analog-analyzer-272715/github.com/aaali-software/docker-ftb_revelation
+          imagePullPolicy: IfNotPresent
+          name: docker-ftb-revelation-1
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: ftb-revelation
+  name: ftb-revelation-hpa-cre8
+  namespace: default
+spec:
+  maxReplicas: 5
+  metrics:
+    - resource:
+        name: cpu
+        targetAverageUtilization: 80
+      type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ftb-revelation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ftb-revelation
+  name: ftb-revelation-service
+  namespace: default
+spec:
+  clusterIP: 10.99.13.73
+  externalTrafficPolicy: Cluster
+  ports:
+    - nodePort: 30854
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: ftb-revelation
+  sessionAffinity: None
+  type: LoadBalancer
