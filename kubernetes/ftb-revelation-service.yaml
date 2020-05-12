@@ -2,14 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: ftb-revelation
-  name: ftb-revelation
-  namespace: default
+    app: minecraft-server
+    mod-api: forge
+    modpack: feed-the-beast
+    mods: 'yes'
+  name: minecraft-server
+  namespace: ftb
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: ftb-revelation
+      app: minecraft-server
+      mod-api: forge
+      modpack: feed-the-beast
+      mods: 'yes'
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,21 +24,34 @@ spec:
   template:
     metadata:
       labels:
-        app: ftb-revelation
+        app: minecraft-server
+        mod-api: forge
+        modpack: feed-the-beast
+        mods: 'yes'
     spec:
       containers:
         - image: >-
             gcr.io/analog-analyzer-272715/github.com/aaali-software/docker-ftb_revelation
           imagePullPolicy: IfNotPresent
           name: docker-ftb-revelation-1
+          resources:
+            limits:
+              cpu: '4'
+              memory: 7G
+            requests:
+              cpu: '2'
+              memory: 4G
 ---
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
-    app: ftb-revelation
-  name: ftb-revelation-hpa-cre8
-  namespace: default
+    app: minecraft-server
+    mod-api: forge
+    modpack: feed-the-beast
+    mods: 'yes'
+  name: minecraft-server-hpa-twz2
+  namespace: ftb
 spec:
   maxReplicas: 5
   metrics:
@@ -44,24 +63,30 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: ftb-revelation
+    name: minecraft-server
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: ftb-revelation
-  name: ftb-revelation-service
-  namespace: default
+    app: minecraft-server
+    mod-api: forge
+    modpack: feed-the-beast
+    mods: 'yes'
+  name: minecraft-server-service
+  namespace: ftb
 spec:
-  clusterIP: 10.99.13.73
+  clusterIP: 10.0.1.223
   externalTrafficPolicy: Cluster
   ports:
-    - nodePort: 30854
+    - nodePort: 32150
       port: 80
       protocol: TCP
-      targetPort: 80
+      targetPort: 25565
   selector:
-    app: ftb-revelation
+    app: minecraft-server
+    mod-api: forge
+    modpack: feed-the-beast
+    mods: 'yes'
   sessionAffinity: None
   type: LoadBalancer
